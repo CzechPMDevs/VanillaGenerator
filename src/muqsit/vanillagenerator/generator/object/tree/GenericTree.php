@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace muqsit\vanillagenerator\generator\object\tree;
 
 use muqsit\vanillagenerator\generator\object\TerrainObject;
+use pocketmine\block\Air;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\utils\TreeType;
+use pocketmine\block\BlockTypeIds;
+use pocketmine\block\Leaves;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\block\Wood;
 use pocketmine\utils\Random;
 use pocketmine\world\BlockTransaction;
 use pocketmine\world\ChunkManager;
@@ -37,17 +38,31 @@ class GenericTree extends TerrainObject{
 	public function __construct(Random $random, BlockTransaction $transaction){
 		$this->transaction = $transaction;
 		$this->setOverridables(
-			BlockLegacyIds::AIR,
-			BlockLegacyIds::LEAVES,
-			BlockLegacyIds::GRASS,
-			BlockLegacyIds::DIRT,
-			BlockLegacyIds::LOG,
-			BlockLegacyIds::LOG2,
-			BlockLegacyIds::SAPLING,
-			BlockLegacyIds::VINE
+			BlockTypeIds::AIR,
+			BlockTypeIds::ACACIA_LEAVES,
+			BlockTypeIds::AZALEA_LEAVES,
+			BlockTypeIds::BIRCH_LEAVES,
+			BlockTypeIds::DARK_OAK_LEAVES,
+			BlockTypeIds::JUNGLE_LEAVES,
+			BlockTypeIds::FLOWERING_AZALEA_LEAVES,
+			BlockTypeIds::MANGROVE_LEAVES,
+			BlockTypeIds::OAK_LEAVES,
+			BlockTypeIds::SPRUCE_LEAVES,
+			BlockTypeIds::GRASS,
+			BlockTypeIds::DIRT,
+			BlockTypeIds::ACACIA_LOG,
+			BlockTypeIds::BIRCH_LOG,
+			BlockTypeIds::DARK_OAK_LOG,
+			BlockTypeIds::JUNGLE_LOG,
+			BlockTypeIds::MANGROVE_LOG,
+			BlockTypeIds::OAK_LOG,
+			BlockTypeIds::SPRUCE_LOG,
+			BlockTypeIds::VINES
+			// TODO - Sapling
 		);
+
 		$this->setHeight($random->nextBoundedInt(3) + 4);
-		$this->setType(TreeType::OAK());
+		$this->setType(VanillaBlocks::OAK_LOG(), VanillaBlocks::OAK_LEAVES());
 	}
 
 	final protected function setOverridables(int ...$overridables) : void{
@@ -61,11 +76,9 @@ class GenericTree extends TerrainObject{
 	/**
 	 * Sets the block data values for this tree's blocks.
 	 */
-	final protected function setType(TreeType $type) : void{
-		$magicNumber = $type->getMagicNumber();
-		$blockFactory = BlockFactory::getInstance();
-		$this->logType = $blockFactory->get($magicNumber >= 4 ? BlockLegacyIds::LOG2 : BlockLegacyIds::LOG, $magicNumber & 0x3);
-		$this->leavesType = $blockFactory->get($magicNumber >= 4 ? BlockLegacyIds::LEAVES2 : BlockLegacyIds::LEAVES, $magicNumber & 0x3);
+	final protected function setType(Wood $logType, Leaves $leavesType) : void{
+		$this->logType = $logType;
+		$this->leavesType = $leavesType;
 	}
 
 	/**
@@ -84,8 +97,8 @@ class GenericTree extends TerrainObject{
 	 * @return bool whether this tree can grow on the type of block below it; false otherwise
 	 */
 	public function canPlaceOn(Block $soil) : bool{
-		$type = $soil->getId();
-		return $type === BlockLegacyIds::GRASS || $type === BlockLegacyIds::DIRT || $type === BlockLegacyIds::FARMLAND;
+		$type = $soil->getTypeId();
+		return $type === BlockTypeIds::GRASS || $type === BlockTypeIds::DIRT || $type === BlockTypeIds::FARMLAND;
 	}
 
 	/**
@@ -112,7 +125,7 @@ class GenericTree extends TerrainObject{
 				for($z = $baseZ - $radius; $z <= $baseZ + $radius; ++$z){
 					if($y >= 0 && $y < $height){
 						// we can overlap some blocks around
-						if(!array_key_exists($world->getBlockAt($x, $y, $z)->getId(), $this->overridables)){
+						if(!array_key_exists($world->getBlockAt($x, $y, $z)->getTypeId(), $this->overridables)){
 							return false;
 						}
 					}else{ // height out of range
@@ -188,8 +201,8 @@ class GenericTree extends TerrainObject{
 	 * @param ChunkManager $world the world we are generating in
 	 */
 	protected function replaceIfAirOrLeaves(int $x, int $y, int $z, Block $newMaterial, ChunkManager $world) : void{
-		$oldMaterial = $world->getBlockAt($x, $y, $z)->getId();
-		if($oldMaterial === BlockLegacyIds::AIR || $oldMaterial === BlockLegacyIds::LEAVES){
+		$oldMaterial = $world->getBlockAt($x, $y, $z);
+		if($oldMaterial instanceof Air || $oldMaterial instanceof Leaves){
 			$this->transaction->addBlockAt($x, $y, $z, $newMaterial);
 		}
 	}

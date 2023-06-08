@@ -1,7 +1,7 @@
 name: VanillaGenerator
 antigen: muqsit\vanillagenerator
-api: 4.0.0
-version: 0.0.5
+api: 5.0.0
+version: 0.0.6
 author: Muqsit
 authors: [VixikHD]
 website: https://github.com/CzechPMDevs/VanillaGenerator

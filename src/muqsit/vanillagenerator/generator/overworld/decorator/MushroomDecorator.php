@@ -6,8 +6,9 @@ namespace muqsit\vanillagenerator\generator\overworld\decorator;
 
 use muqsit\vanillagenerator\generator\Decorator;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\block\Dirt;
+use pocketmine\block\utils\DirtType;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
@@ -55,18 +56,18 @@ class MushroomDecorator extends Decorator{
 
 				$block = $world->getBlockAt($x, $y, $z);
 				$belowBelow = $world->getBlockAt($x, $y - 1, $z);
-				if($y < $height && $block->getId() === BlockLegacyIds::AIR){
-					switch($belowBelow->getId()){
-						case BlockLegacyIds::MYCELIUM:
-						case BlockLegacyIds::PODZOL:
+				if($y < $height && $block->getTypeId() === BlockTypeIds::AIR){
+					switch($belowBelow->getTypeId()){
+						case BlockTypeIds::MYCELIUM:
+						case BlockTypeIds::PODZOL:
 							$canPlaceShroom = true;
 							break;
-						case BlockLegacyIds::GRASS:
+						case BlockTypeIds::GRASS:
 							$canPlaceShroom = ($block->getLightLevel() < 13);
 							break;
-						case BlockLegacyIds::DIRT:
+						case BlockTypeIds::DIRT:
 							assert($belowBelow instanceof Dirt);
-							if(!$belowBelow->isCoarse()){
+							if(!$belowBelow->getDirtType()->equals(DirtType::COARSE())){
 								$canPlaceShroom = $block->getLightLevel() < 13;
 							}else{
 								$canPlaceShroom = false;

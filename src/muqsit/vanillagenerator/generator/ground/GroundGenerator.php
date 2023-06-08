@@ -6,8 +6,8 @@ namespace muqsit\vanillagenerator\generator\ground;
 
 use muqsit\vanillagenerator\generator\overworld\biome\BiomeClimateManager;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
+use pocketmine\block\RuntimeBlockStateRegistry;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
@@ -54,9 +54,9 @@ class GroundGenerator{
 	public function generateTerrainColumn(ChunkManager $world, Random $random, int $x, int $z, int $biome, float $surfaceNoise) : void{
 		$seaLevel = 64;
 
-		$topMat = $this->topMaterial->getFullId();
-		$groundMat = $this->groundMaterial->getFullId();
-		$groundMatId = $this->groundMaterial->getId();
+		$topMat = $this->topMaterial->getStateId();
+		$groundMat = $this->groundMaterial->getStateId();
+		$groundMatId = $this->groundMaterial->getTypeId();
 
 		$chunkX = $x;
 		$chunkZ = $z;
@@ -64,13 +64,13 @@ class GroundGenerator{
 		$surfaceHeight = max((int) ($surfaceNoise / 3.0 + 3.0 + $random->nextFloat() * 0.25), 1);
 		$deep = -1;
 
-		$blockFactory = BlockFactory::getInstance();
-		$air = VanillaBlocks::AIR()->getFullId();
-		$stone = VanillaBlocks::STONE()->getFullId();
-		$sandstone = VanillaBlocks::SANDSTONE()->getFullId();
-		$gravel = VanillaBlocks::GRAVEL()->getFullId();
-		$bedrock = VanillaBlocks::BEDROCK()->getFullId();
-		$ice = VanillaBlocks::ICE()->getFullId();
+		$registry = RuntimeBlockStateRegistry::getInstance();
+		$air = VanillaBlocks::AIR()->getStateId();
+		$stone = VanillaBlocks::STONE()->getStateId();
+		$sandstone = VanillaBlocks::SANDSTONE()->getStateId();
+		$gravel = VanillaBlocks::GRAVEL()->getStateId();
+		$bedrock = VanillaBlocks::BEDROCK()->getStateId();
+		$ice = VanillaBlocks::ICE()->getStateId();
 
 		/** @var Chunk $chunk */
 		$chunk = $world->getChunk($x >> 4, $z >> 4);
@@ -79,42 +79,43 @@ class GroundGenerator{
 
 		for($y = 255; $y >= 0; --$y){
 			if($y <= $random->nextBoundedInt($this->bedrockRoughness)){
-				$chunk->setFullBlock($blockX, $y, $blockZ, $bedrock);
+				$chunk->setBlockStateId($blockX, $y, $blockZ, $bedrock);
 			}else{
-				$matId = $blockFactory->fromFullBlock($chunk->getFullBlock($blockX, $y, $blockZ))->getId();
-				if($matId === BlockLegacyIds::AIR){
+				$mat = $registry->fromStateId($chunk->getBlockStateId($blockX, $y, $blockZ));
+				$matId = $mat->getTypeId();
+				if($matId === BlockTypeIds::AIR){
 					$deep = -1;
-				}elseif($matId === BlockLegacyIds::STONE){
+				}elseif($matId === BlockTypeIds::STONE){
 					if($deep === -1){
 						if($y >= $seaLevel - 5 && $y <= $seaLevel){
-							$topMat = $this->topMaterial->getFullId();
-							$groundMat = $this->groundMaterial->getFullId();
-							$groundMatId = $this->groundMaterial->getId();
+							$topMat = $this->topMaterial->getStateId();
+							$groundMat = $this->groundMaterial->getStateId();
+							$groundMatId = $this->groundMaterial->getTypeId();
 						}
 
 						$deep = $surfaceHeight;
 						if($y >= $seaLevel - 2){
-							$chunk->setFullBlock($blockX, $y, $blockZ, $topMat);
+							$chunk->setBlockStateId($blockX, $y, $blockZ, $topMat);
 						}elseif($y < $seaLevel - 8 - $surfaceHeight){
 							$topMat = $air;
 							$groundMat = $stone;
-							$groundMatId = BlockLegacyIds::STONE;
-							$chunk->setFullBlock($blockX, $y, $blockZ, $gravel);
+							$groundMatId = BlockTypeIds::STONE;
+							$chunk->setBlockStateId($blockX, $y, $blockZ, $gravel);
 						}else{
-							$chunk->setFullBlock($blockX, $y, $blockZ, $groundMat);
+							$chunk->setBlockStateId($blockX, $y, $blockZ, $groundMat);
 						}
 					}elseif($deep > 0){
 						--$deep;
-						$chunk->setFullBlock($blockX, $y, $blockZ, $groundMat);
+						$chunk->setBlockStateId($blockX, $y, $blockZ, $groundMat);
 
-						if($deep === 0 && $groundMatId === BlockLegacyIds::SAND){
+						if($deep === 0 && $groundMatId === BlockTypeIds::SAND){
 							$deep = $random->nextBoundedInt(4) + max(0, $y - $seaLevel - 1);
 							$groundMat = $sandstone;
-							$groundMatId = BlockLegacyIds::SANDSTONE;
+							$groundMatId = BlockTypeIds::SANDSTONE;
 						}
 					}
-				}elseif($matId === BlockLegacyIds::STILL_WATER && $y === $seaLevel - 2 && BiomeClimateManager::isCold($biome, $chunkX, $y, $chunkZ)){
-					$chunk->setFullBlock($blockX, $y, $blockZ, $ice);
+				}elseif($matId === BlockTypeIds::WATER && $y === $seaLevel - 2 && BiomeClimateManager::isCold($biome, $chunkX, $y, $chunkZ)){
+					$chunk->setBlockStateId($blockX, $y, $blockZ, $ice);
 				}
 			}
 		}

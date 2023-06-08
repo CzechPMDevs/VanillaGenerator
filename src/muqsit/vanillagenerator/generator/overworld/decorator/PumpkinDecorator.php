@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace muqsit\vanillagenerator\generator\overworld\decorator;
 
 use muqsit\vanillagenerator\generator\Decorator;
-use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
+use pocketmine\block\RuntimeBlockStateRegistry;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\math\Facing;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
@@ -23,15 +24,15 @@ class PumpkinDecorator extends Decorator{
 			$sourceZ = ($chunkZ << 4) + $random->nextBoundedInt(16);
 			$sourceY = $random->nextBoundedInt($chunk->getHighestBlockAt($sourceX & 0x0f, $sourceZ & 0x0f) << 1);
 
-			$blockFactory = BlockFactory::getInstance();
+			$blockFactory = RuntimeBlockStateRegistry::getInstance();
 
 			for($i = 0; $i < 64; ++$i){
 				$x = $sourceX + $random->nextBoundedInt(8) - $random->nextBoundedInt(8);
 				$z = $sourceZ + $random->nextBoundedInt(8) - $random->nextBoundedInt(8);
 				$y = $sourceY + $random->nextBoundedInt(4) - $random->nextBoundedInt(4);
 
-				if($world->getBlockAt($x, $y, $z)->getId() === BlockLegacyIds::AIR && $world->getBlockAt($x, $y - 1, $z)->getId() === BlockLegacyIds::GRASS){
-					$world->setBlockAt($x, $y, $z, $blockFactory->get(BlockLegacyIds::PUMPKIN, self::FACES[$random->nextBoundedInt(count(self::FACES))]));
+				if($world->getBlockAt($x, $y, $z)->getTypeId() === BlockTypeIds::AIR && $world->getBlockAt($x, $y - 1, $z)->getTypeId() === BlockTypeIds::GRASS){
+					$world->setBlockAt($x, $y, $z, VanillaBlocks::CARVED_PUMPKIN()->setFacing($random->nextBoundedInt(count(self::FACES))));
 				}
 			}
 		}

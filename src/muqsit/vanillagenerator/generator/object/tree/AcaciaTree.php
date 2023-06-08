@@ -6,12 +6,12 @@ namespace muqsit\vanillagenerator\generator\object\tree;
 
 use muqsit\vanillagenerator\generator\utils\MathHelper;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\utils\TreeType;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\BlockTransaction;
 use pocketmine\world\ChunkManager;
+use pocketmine\world\generator\object\TreeType;
 use function abs;
 
 class AcaciaTree extends GenericTree{
@@ -19,12 +19,12 @@ class AcaciaTree extends GenericTree{
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
 		$this->setHeight($random->nextBoundedInt(3) + $random->nextBoundedInt(3) + 5);
-		$this->setType(TreeType::ACACIA());
+		$this->setType(VanillaBlocks::ACACIA_LOG(), VanillaBlocks::ACACIA_LEAVES());
 	}
 
 	public function canPlaceOn(Block $soil) : bool{
-		$type = $soil->getId();
-		return $type === BlockLegacyIds::GRASS || $type === BlockLegacyIds::DIRT;
+		$type = $soil->getTypeId();
+		return $type === BlockTypeIds::GRASS || $type === BlockTypeIds::DIRT;
 	}
 
 	public function generate(ChunkManager $world, Random $random, int $sourceX, int $sourceY, int $sourceZ) : bool{
@@ -57,8 +57,8 @@ class AcaciaTree extends GenericTree{
 				--$twistCount;
 			}
 
-			$material = $world->getBlockAt($centerX, $sourceY + $y, $centerZ)->getId();
-			if($material === BlockLegacyIds::AIR || $material === BlockLegacyIds::LEAVES){
+			$material = $world->getBlockAt($centerX, $sourceY + $y, $centerZ)->getTypeId();
+			if($material === BlockTypeIds::AIR || $material === BlockTypeIds::ACACIA_LEAVES){
 				$trunkTopY = $sourceY + $y;
 				$this->transaction->addBlockAt($centerX, $sourceY + $y, $centerZ, $this->logType);
 			}
@@ -104,8 +104,8 @@ class AcaciaTree extends GenericTree{
 				if($twistCount > 0){
 					$centerX += $dxB;
 					$centerZ += $dzB;
-					$material = $world->getBlockAt($centerX, $sourceY + $y, $centerZ)->getId();
-					if($material === BlockLegacyIds::AIR || $material === BlockLegacyIds::LEAVES){
+					$material = $world->getBlockAt($centerX, $sourceY + $y, $centerZ)->getTypeId();
+					if($material === BlockTypeIds::AIR || $material === BlockTypeIds::ACACIA_LEAVES){
 						$trunkTopY = $sourceY + $y;
 						$this->transaction->addBlockAt($centerX, $sourceY + $y, $centerZ, $this->logType);
 					}
@@ -136,7 +136,7 @@ class AcaciaTree extends GenericTree{
 	}
 
 	private function setLeaves(int $x, int $y, int $z, ChunkManager $world) : void{
-		if($world->getBlockAt($x, $y, $z)->getId() === BlockLegacyIds::AIR){
+		if($world->getBlockAt($x, $y, $z)->getTypeId() === BlockTypeIds::AIR){
 			$this->transaction->addBlockAt($x, $y, $z, $this->leavesType);
 		}
 	}

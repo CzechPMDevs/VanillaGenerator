@@ -6,6 +6,7 @@ namespace muqsit\vanillagenerator\generator\object\tree;
 
 use muqsit\vanillagenerator\generator\utils\MathHelper;
 use pocketmine\block\BlockFactory;
+use pocketmine\block\RuntimeBlockStateRegistry;
 use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 use pocketmine\world\BlockTransaction;
@@ -71,7 +72,7 @@ class BigOakTree extends GenericTree{
 						$zSquared = pow(abs($z) + 0.5, 2);
 						if(
 							($xSquared + $zSquared <= $sizeSquared) &&
-							array_key_exists($world->getBlockAt($node->x + $x, $node->y + $y, $node->z + $z)->getId(), $this->overridables)
+							array_key_exists($world->getBlockAt($node->x + $x, $node->y + $y, $node->z + $z)->getTypeId(), $this->overridables)
 						){
 							$this->transaction->addBlockAt($node->x + $x, $node->y + $y, $node->z + $z, $this->leavesType);
 						}
@@ -85,7 +86,7 @@ class BigOakTree extends GenericTree{
 			$this->transaction->addBlockAt($sourceX, $sourceY + $y, $sourceZ, $this->logType);
 		}
 
-		$blockFactory = BlockFactory::getInstance();
+		$registry = RuntimeBlockStateRegistry::getInstance();
 
 		// generate the branches
 		foreach($leafNodes as $node){
@@ -104,7 +105,7 @@ class BigOakTree extends GenericTree{
 						$z = abs($branch->getFloorZ() - $base->getFloorZ());
 						$max = max($x, $z);
 						$direction = $max > 0 ? ($max === $x ? 4 : 8) : 0; // EAST / SOUTH
-						$this->transaction->addBlockAt($branch->getFloorX(), $branch->getFloorY(), $branch->getFloorZ(), $blockFactory->get($this->logType->getId(), $this->logType->getMeta() | $direction));
+						$this->transaction->addBlockAt($branch->getFloorX(), $branch->getFloorY(), $branch->getFloorZ(), $this->logType);
 					}
 				}
 			}
@@ -129,7 +130,7 @@ class BigOakTree extends GenericTree{
 				if(
 					$targetFloorY < $minY ||
 					$targetFloorY > $maxY ||
-					!array_key_exists($world->getBlockAt($target->getFloorX(), $target->getFloorY(), $target->getFloorZ())->getId(), $this->overridables)
+					!array_key_exists($world->getBlockAt($target->getFloorX(), $target->getFloorY(), $target->getFloorZ())->getTypeId(), $this->overridables)
 				){
 					return $n;
 				}

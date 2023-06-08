@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace muqsit\vanillagenerator\generator\object;
 
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
@@ -25,7 +25,7 @@ class IceSpike extends TerrainObject{
 
 	public static function init() : void{
 		self::$MATERIALS = [];
-		foreach([BlockLegacyIds::AIR, BlockLegacyIds::DIRT, BlockLegacyIds::SNOW_LAYER, BlockLegacyIds::SNOW_BLOCK, BlockLegacyIds::ICE, BlockLegacyIds::PACKED_ICE] as $blockId){
+		foreach([BlockTypeIds::AIR, BlockTypeIds::DIRT, BlockTypeIds::SNOW_LAYER, BlockTypeIds::SNOW, BlockTypeIds::ICE, BlockTypeIds::PACKED_ICE] as $blockId){
 			self::$MATERIALS[$blockId] = $blockId;
 		}
 	}
@@ -48,7 +48,7 @@ class IceSpike extends TerrainObject{
 				}
 				for($y = $tipOffset - 1; $y >= -3; --$y){
 					$block = $world->getBlockAt($sourceX + $x, $sourceY + $y, $sourceZ + $z);
-					if(array_key_exists($block->getId(), self::$MATERIALS)){
+					if(array_key_exists($block->getTypeId(), self::$MATERIALS)){
 						$world->setBlockAt($sourceX + $x, $sourceY + $y, $sourceZ + $z, VanillaBlocks::PACKED_ICE());
 						--$stackHeight;
 						if($stackHeight <= 0){
@@ -75,12 +75,12 @@ class IceSpike extends TerrainObject{
 						continue;
 					}
 					// tip shape in top direction
-					if(array_key_exists($world->getBlockAt($sourceX + $x, $sourceY + $tipOffset + $y, $sourceZ + $z)->getId(), self::$MATERIALS)){
+					if(array_key_exists($world->getBlockAt($sourceX + $x, $sourceY + $tipOffset + $y, $sourceZ + $z)->getTypeId(), self::$MATERIALS)){
 						$world->setBlockAt($sourceX + $x, $sourceY + $tipOffset + $y, $sourceZ + $z, VanillaBlocks::PACKED_ICE());
 						$succeeded = true;
 					}
 					if($radius > 1 && $y !== 0){ // same shape in bottom direction
-						if(array_key_exists($world->getBlockAt($sourceX + $x, $sourceY + $tipOffset - $y, $sourceZ + $z)->getId(), self::$MATERIALS)){
+						if(array_key_exists($world->getBlockAt($sourceX + $x, $sourceY + $tipOffset - $y, $sourceZ + $z)->getTypeId(), self::$MATERIALS)){
 							$world->setBlockAt($sourceX + $x, $sourceY + $tipOffset - $y, $sourceZ + $z, VanillaBlocks::PACKED_ICE());
 							$succeeded = true;
 						}

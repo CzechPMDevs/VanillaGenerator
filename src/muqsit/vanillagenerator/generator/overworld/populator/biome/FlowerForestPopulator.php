@@ -19,7 +19,7 @@ use function min;
 class FlowerForestPopulator extends ForestPopulator{
 
 	/** @var Block[] */
-	protected static array $FLOWERS;
+	protected static array $FLOWERS = [];
 
 	protected static function initFlowers() : void{
 		self::$FLOWERS = [

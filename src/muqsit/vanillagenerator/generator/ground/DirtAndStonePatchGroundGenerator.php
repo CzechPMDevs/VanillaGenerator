@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace muqsit\vanillagenerator\generator\ground;
 
+use pocketmine\block\utils\DirtType;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
@@ -15,7 +16,7 @@ class DirtAndStonePatchGroundGenerator extends GroundGenerator{
 			$this->setTopMaterial(VanillaBlocks::STONE());
 			$this->setGroundMaterial(VanillaBlocks::STONE());
 		}elseif($surfaceNoise > -0.5){
-			$this->setTopMaterial(VanillaBlocks::DIRT()->setCoarse(true));
+			$this->setTopMaterial(VanillaBlocks::DIRT()->setDirtType(DirtType::COARSE()));
 			$this->setGroundMaterial(VanillaBlocks::DIRT());
 		}else{
 			$this->setTopMaterial(VanillaBlocks::GRASS());

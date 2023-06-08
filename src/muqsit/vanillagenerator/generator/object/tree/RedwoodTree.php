@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace muqsit\vanillagenerator\generator\object\tree;
 
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\block\utils\TreeType;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
@@ -22,13 +22,13 @@ class RedwoodTree extends GenericTree{
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
 		$this->setOverridables(
-			BlockLegacyIds::AIR,
-			BlockLegacyIds::LEAVES
+			BlockTypeIds::AIR,
+			BlockTypeIds::SPRUCE_LEAVES
 		);
 		$this->setHeight($random->nextBoundedInt(4) + 6);
 		$this->setLeavesHeight($random->nextBoundedInt(2) + 1);
 		$this->setMaxRadius($random->nextBoundedInt(2) + 2);
-		$this->setType(TreeType::SPRUCE());
+		$this->setType(VanillaBlocks::SPRUCE_LOG(), VanillaBlocks::SPRUCE_LEAVES());
 	}
 
 	final protected function setMaxRadius(int $maxRadius) : void{
@@ -51,7 +51,7 @@ class RedwoodTree extends GenericTree{
 				for($z = $baseZ - $radius; $z <= $baseZ + $radius; ++$z){
 					if($y >= 0 && $y < World::Y_MAX){
 						// we can overlap some blocks around
-						$type = $world->getBlockAt($x, $y, $z)->getId();
+						$type = $world->getBlockAt($x, $y, $z)->getTypeId();
 						if(!array_key_exists($type, $this->overridables)){
 							return false;
 						}
@@ -83,7 +83,7 @@ class RedwoodTree extends GenericTree{
 							abs($z - $sourceZ) !== $radius ||
 							$radius <= 0
 						) &&
-						$world->getBlockAt($x, $y, $z)->getId() === BlockLegacyIds::AIR
+						$world->getBlockAt($x, $y, $z)->getTypeId() === BlockTypeIds::AIR
 					){
 						$this->transaction->addBlockAt($x, $y, $z, $this->leavesType);
 					}
@@ -103,7 +103,7 @@ class RedwoodTree extends GenericTree{
 
 		// generate the trunk
 		for($y = 0; $y < $this->height - $random->nextBoundedInt(3); $y++){
-			$type = $world->getBlockAt($sourceX, $sourceY + $y, $sourceZ)->getId();
+			$type = $world->getBlockAt($sourceX, $sourceY + $y, $sourceZ)->getTypeId();
 			if(array_key_exists($type, $this->overridables)){
 				$this->transaction->addBlockAt($sourceX, $sourceY + $y, $sourceZ, $this->logType);
 			}

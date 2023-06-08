@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace muqsit\vanillagenerator\generator\object;
 
+use pocketmine\block\Air;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
+use pocketmine\block\Leaves;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
 
@@ -19,9 +21,9 @@ class TallGrass extends TerrainObject{
 
 	public function generate(ChunkManager $world, Random $random, int $sourceX, int $sourceY, int $sourceZ) : bool{
 		do{
-			$thisBlockId = $world->getBlockAt($sourceX, $sourceY, $sourceZ)->getId();
+			$thisBlock = $world->getBlockAt($sourceX, $sourceY, $sourceZ);
 			--$sourceY;
-		}while(($thisBlockId === BlockLegacyIds::AIR || $thisBlockId === BlockLegacyIds::LEAVES) && $sourceY > 0);
+		}while(($thisBlock instanceof Air || $thisBlock instanceof Leaves) && $sourceY > 0);
 		++$sourceY;
 		$succeeded = false;
 		$height = $world->getMaxY();
@@ -30,9 +32,9 @@ class TallGrass extends TerrainObject{
 			$z = $sourceZ + $random->nextBoundedInt(8) - $random->nextBoundedInt(8);
 			$y = $sourceY + $random->nextBoundedInt(4) - $random->nextBoundedInt(4);
 
-			$blockType = $world->getBlockAt($x, $y, $z)->getId();
-			$blockTypeBelow = $world->getBlockAt($x, $y - 1, $z)->getId();
-			if($y < $height && $blockType === BlockLegacyIds::AIR && ($blockTypeBelow === BlockLegacyIds::GRASS || $blockTypeBelow === BlockLegacyIds::DIRT)){
+			$blockType = $world->getBlockAt($x, $y, $z)->getTypeId();
+			$blockTypeBelow = $world->getBlockAt($x, $y - 1, $z)->getTypeId();
+			if($y < $height && $blockType === BlockTypeIds::AIR && ($blockTypeBelow === BlockTypeIds::GRASS || $blockTypeBelow === BlockTypeIds::DIRT)){
 				$world->setBlockAt($x, $y, $z, $this->grassType);
 				$succeeded = true;
 			}

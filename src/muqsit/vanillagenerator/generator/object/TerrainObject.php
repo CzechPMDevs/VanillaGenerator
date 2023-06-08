@@ -8,7 +8,6 @@ use pocketmine\block\Flowable;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
-use pocketmine\world\World;
 
 abstract class TerrainObject{
 

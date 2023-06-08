@@ -6,9 +6,11 @@ namespace muqsit\vanillagenerator\generator\object\tree;
 
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
+use pocketmine\block\RuntimeBlockStateRegistry;
 use pocketmine\block\utils\TreeType;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\block\Water;
 use pocketmine\utils\Random;
 use pocketmine\world\BlockTransaction;
 use pocketmine\world\ChunkManager;
@@ -19,26 +21,16 @@ use function array_key_exists;
 
 class SwampTree extends CocoaTree{
 
-	/** @var int[] */
-	private static array $WATER_BLOCK_TYPES;
-
-	public static function init() : void{
-		self::$WATER_BLOCK_TYPES = [];
-		foreach([BlockLegacyIds::FLOWING_WATER, BlockLegacyIds::STILL_WATER] as $blockId){
-			self::$WATER_BLOCK_TYPES[$blockId] = $blockId;
-		}
-	}
-
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
-		$this->setOverridables(BlockLegacyIds::AIR, BlockLegacyIds::LEAVES);
+		$this->setOverridables(BlockTypeIds::AIR, BlockTypeIds::OAK_LEAVES);
 		$this->setHeight($random->nextBoundedInt(4) + 5);
-		$this->setType(TreeType::OAK());
+		$this->setType(VanillaBlocks::OAK_LOG(), VanillaBlocks::OAK_LEAVES());
 	}
 
 	public function canPlaceOn(Block $soil) : bool{
-		$id = $soil->getId();
-		return $id === BlockLegacyIds::GRASS || $id === BlockLegacyIds::DIRT;
+		$id = $soil->getTypeId();
+		return $id === BlockTypeIds::GRASS || $id === BlockTypeIds::DIRT;
 	}
 
 	public function canPlace(int $baseX, int $baseY, int $baseZ, ChunkManager $world) : bool{
@@ -58,12 +50,13 @@ class SwampTree extends CocoaTree{
 			for($x = $baseX - $radius; $x <= $baseX + $radius; ++$x){
 				for($z = $baseZ - $radius; $z <= $baseZ + $radius; ++$z){
 					// we can overlap some blocks around
-					$type = $world->getBlockAt($x, $y, $z)->getId();
-					if(array_key_exists($type, $this->overridables)){
+					$type = $world->getBlockAt($x, $y, $z);
+					$typeId = $type->getTypeId();
+					if(array_key_exists($typeId, $this->overridables)){
 						continue;
 					}
 
-					if($type === BlockLegacyIds::FLOWING_WATER || $type === BlockLegacyIds::STILL_WATER){
+					if($type instanceof Water){
 						if($y > $baseY){
 							return false;
 						}
@@ -81,8 +74,8 @@ class SwampTree extends CocoaTree{
 		$chunk = $world->getChunk($sourceX >> 4, $sourceZ >> 4);
 		$chunkBlockX = $sourceX & 0x0f;
 		$chunkBlockZ = $sourceZ & 0x0f;
-		$blockFactory = BlockFactory::getInstance();
-		while(array_key_exists($blockFactory->fromFullBlock($chunk->getFullBlock($chunkBlockX, $sourceY, $chunkBlockZ))->getId(), self::$WATER_BLOCK_TYPES)){
+		$registry = RuntimeBlockStateRegistry::getInstance();
+		while($registry->fromStateId($chunk->getBlockStateId($chunkBlockX, $sourceY, $chunkBlockZ)) instanceof Water){
 			--$sourceY;
 		}
 
@@ -112,12 +105,11 @@ class SwampTree extends CocoaTree{
 		// generate the trunk
 		for($y = 0; $y < $this->height; ++$y){
 			if($sourceY + $y < $worldHeight){
-				$material = $blockFactory->fromFullBlock($chunk->getFullBlock($chunkBlockX, $sourceY + $y, $chunkBlockZ))->getId();
+				$material = $registry->fromStateId($chunk->getBlockStateId($chunkBlockX, $sourceY + $y, $chunkBlockZ))->getTypeId();
 				if(
-					$material === BlockLegacyIds::AIR ||
-					$material === BlockLegacyIds::LEAVES ||
-					$material === BlockLegacyIds::FLOWING_WATER ||
-					$material === BlockLegacyIds::STILL_WATER
+					$material === BlockTypeIds::AIR ||
+					$material === BlockTypeIds::OAK_LEAVES ||
+					$material === BlockTypeIds::WATER
 				){
 					$this->transaction->addBlockAt($sourceX, $sourceY + $y, $sourceZ, $this->logType);
 				}
@@ -131,5 +123,3 @@ class SwampTree extends CocoaTree{
 		return true;
 	}
 }
-
-SwampTree::init();

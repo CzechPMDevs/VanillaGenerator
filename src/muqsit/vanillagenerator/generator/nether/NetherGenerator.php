@@ -17,6 +17,7 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use function intdiv;
 
 /**
@@ -84,7 +85,10 @@ class NetherGenerator extends VanillaGenerator{
 
 		for($x = 0; $x < 16; ++$x){
 			for($z = 0; $z < 16; ++$z){
-				$chunk->setBiomeId($x, $z, $biomes->getBiome($x, $z));
+				$biome = $biomes->getBiome($x, $z);
+				for($y = 0; $y < World::Y_MAX; ++$y)
+					$chunk->setBiomeId($x, $y, $z, $biome);
+
 				$this->generateTerrainColumn($world, $cx + $x, $cz + $z, $surfaceNoise[$x | $z << 4], $soulSandNoise[$x | $z << 4], $graveNoise[$x | $z << 4]);
 			}
 		}
@@ -129,8 +133,8 @@ class NetherGenerator extends VanillaGenerator{
 	private function generateRawTerrain(ChunkManager $world, int $chunkX, int $chunkZ) : void{
 		$density = $this->generateTerrainDensity($chunkX << 2, $chunkZ << 2);
 
-		$netherRack = VanillaBlocks::NETHERRACK()->getFullId();
-		$stillLava = VanillaBlocks::LAVA()->getStillForm()->getFullId();
+		$netherRack = VanillaBlocks::NETHERRACK()->getStateId();
+		$stillLava = VanillaBlocks::LAVA()->getStillForm()->getStateId();
 
 		/** @var Chunk $chunk */
 		$chunk = $world->getChunk($chunkX, $chunkZ);
@@ -161,9 +165,9 @@ class NetherGenerator extends VanillaGenerator{
 								// any density higher than 0 is ground, any density lower or equal
 								// to 0 is air (or lava if under the lava level).
 								if ($dens > 0) {
-									$subChunk->setFullBlock($m + ($i << 2), $yBlockPos, $n + ($j << 2), $netherRack);
+									$subChunk->setBlockStateId($m + ($i << 2), $yBlockPos, $n + ($j << 2), $netherRack);
 								} elseif ($l + ($k << 3) < 32) {
-									$subChunk->setFullBlock($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stillLava);
+									$subChunk->setBlockStateId($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stillLava);
 								}
 								// interpolation along z
 								$dens += ($d10 - $d9) / 4;
@@ -245,11 +249,11 @@ class NetherGenerator extends VanillaGenerator{
 		$worldHeight = $this->getMaxY();
 		$worldHeightM1 = $worldHeight - 1;
 
-		$blockBedrock = VanillaBlocks::BEDROCK()->getFullId();
-		$blockAir = VanillaBlocks::AIR()->getFullId();
-		$blockNetherRack = VanillaBlocks::NETHERRACK()->getFullId();
-		$blockGravel = VanillaBlocks::GRAVEL()->getFullId();
-		$blockSoulSand = VanillaBlocks::SOUL_SAND()->getFullId();
+		$blockBedrock = VanillaBlocks::BEDROCK()->getStateId();
+		$blockAir = VanillaBlocks::AIR()->getStateId();
+		$blockNetherRack = VanillaBlocks::NETHERRACK()->getStateId();
+		$blockGravel = VanillaBlocks::GRAVEL()->getStateId();
+		$blockSoulSand = VanillaBlocks::SOUL_SAND()->getStateId();
 
 		$topMat = $blockNetherRack;
 		$groundMat = $blockNetherRack;
@@ -261,10 +265,10 @@ class NetherGenerator extends VanillaGenerator{
 
 		for($y = $worldHeightM1; $y >= 0; --$y){
 			if($y <= $this->random->nextBoundedInt($this->bedrockRoughness) || $y >= $worldHeightM1 - $this->random->nextBoundedInt($this->bedrockRoughness)){
-				$chunk->setFullBlock($chunkBlockX, $y, $chunkBlockZ, $blockBedrock);
+				$chunk->setBlockStateId($chunkBlockX, $y, $chunkBlockZ, $blockBedrock);
 				continue;
 			}
-			$mat = $chunk->getFullBlock($chunkBlockX, $y, $chunkBlockZ);
+			$mat = $chunk->getBlockStateId($chunkBlockX, $y, $chunkBlockZ);
 			if($mat === $blockAir){
 				$deep = -1;
 			}elseif($mat === $blockNetherRack){
@@ -286,13 +290,13 @@ class NetherGenerator extends VanillaGenerator{
 
 					$deep = $surfaceHeight;
 					if($y >= 63){
-						$chunk->setFullBlock($chunkBlockX, $y, $chunkBlockZ, $topMat);
+						$chunk->setBlockStateId($chunkBlockX, $y, $chunkBlockZ, $topMat);
 					}else{
-						$chunk->setFullBlock($chunkBlockX, $y, $chunkBlockZ, $groundMat);
+						$chunk->setBlockStateId($chunkBlockX, $y, $chunkBlockZ, $groundMat);
 					}
 				}elseif($deep > 0){
 					--$deep;
-					$chunk->setFullBlock($chunkBlockX, $y, $chunkBlockZ, $groundMat);
+					$chunk->setBlockStateId($chunkBlockX, $y, $chunkBlockZ, $groundMat);
 				}
 			}
 		}

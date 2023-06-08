@@ -6,7 +6,7 @@ namespace muqsit\vanillagenerator\generator\nether\decorator;
 
 use muqsit\vanillagenerator\generator\Decorator;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
@@ -19,7 +19,7 @@ class MushroomDecorator extends Decorator{
 
 	public static function init() : void{
 		self::$MATERIALS = [];
-		foreach([BlockLegacyIds::NETHERRACK, BlockLegacyIds::QUARTZ_ORE, BlockLegacyIds::SOUL_SAND, BlockLegacyIds::GRAVEL] as $blockId){
+		foreach([BlockTypeIds::NETHERRACK, BlockTypeIds::NETHER_QUARTZ_ORE, BlockTypeIds::SOUL_SAND, BlockTypeIds::GRAVEL] as $blockId){
 			self::$MATERIALS[$blockId] = $blockId;
 		}
 	}
@@ -46,8 +46,8 @@ class MushroomDecorator extends Decorator{
 			$blockBelow = $world->getBlockAt($x, $y - 1, $z);
 			if(
 				$y < $height &&
-				$block->getId() === BlockLegacyIds::AIR &&
-				array_key_exists($blockBelow->getId(), self::$MATERIALS)
+				$block->getTypeId() === BlockTypeIds::AIR &&
+				array_key_exists($blockBelow->getTypeId(), self::$MATERIALS)
 			){
 				$world->setBlockAt($x, $y, $z, $this->type);
 			}

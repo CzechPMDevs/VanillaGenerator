@@ -7,9 +7,12 @@ namespace muqsit\vanillagenerator\generator\ground;
 use muqsit\vanillagenerator\generator\noise\glowstone\SimplexOctaveGenerator;
 use muqsit\vanillagenerator\generator\utils\MathHelper;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
+use pocketmine\block\RuntimeBlockStateRegistry;
+use pocketmine\block\utils\DirtType;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\item\Dye;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
 use function abs;
@@ -88,19 +91,19 @@ class MesaGroundGenerator extends GroundGenerator{
 		$groundSet = false;
 
 		$grass = VanillaBlocks::GRASS();
-		$coarseDirt = VanillaBlocks::DIRT()->setCoarse(true);
+		$coarseDirt = VanillaBlocks::DIRT()->setDirtType(DirtType::COARSE());
 
 		for($y = 255; $y >= 0; --$y){
-			if($y < (int) $bryceCanyonHeight && $world->getBlockAt($x, $y, $z)->getId() === BlockLegacyIds::AIR){
+			if($y < (int) $bryceCanyonHeight && $world->getBlockAt($x, $y, $z)->getTypeId() === BlockTypeIds::AIR){
 				$world->setBlockAt($x, $y, $z, VanillaBlocks::STONE());
 			}
 			if($y <= $random->nextBoundedInt(5)){
 				$world->setBlockAt($x, $y, $z, VanillaBlocks::BEDROCK());
 			}else{
-				$matId = $world->getBlockAt($x, $y, $z)->getId();
-				if($matId === BlockLegacyIds::AIR){
+				$matId = $world->getBlockAt($x, $y, $z)->getTypeId();
+				if($matId === BlockTypeIds::AIR){
 					$deep = -1;
-				}elseif($matId === BlockLegacyIds::STONE){
+				}elseif($matId === BlockTypeIds::STONE){
 					if($deep === -1){
 						$groundSet = false;
 						if($y >= $seaLevel - 5 && $y <= $seaLevel){
@@ -139,8 +142,8 @@ class MesaGroundGenerator extends GroundGenerator{
 		}
 	}
 
-	private function setColoredGroundLayer(ChunkManager $world, int $x, int $y, int $z, int $color) : void{
-		$world->setBlockAt($x, $y, $z, $color >= 0 ? BlockFactory::getInstance()->get(BlockLegacyIds::STAINED_CLAY, $color) : VanillaBlocks::HARDENED_CLAY());
+	private function setColoredGroundLayer(ChunkManager $world, int $x, int $y, int $z, DyeColor $color) : void{
+		$world->setBlockAt($x, $y, $z, $color >= 0 ? VanillaBlocks::STAINED_CLAY()->setColor($color) : VanillaBlocks::HARDENED_CLAY());
 	}
 
 	private function setRandomLayerColor(Random $random, int $minLayerCount, int $minLayerHeight, int $color) : void{

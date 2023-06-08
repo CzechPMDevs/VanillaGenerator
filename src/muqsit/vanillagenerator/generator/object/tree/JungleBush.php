@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace muqsit\vanillagenerator\generator\object\tree;
 
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\block\utils\TreeType;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\BlockTransaction;
 use pocketmine\world\ChunkManager;
@@ -19,16 +20,16 @@ class JungleBush extends GenericTree{
 	 */
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
-		$this->setType(TreeType::JUNGLE());
+		$this->setType(VanillaBlocks::JUNGLE_WOOD(), VanillaBlocks::JUNGLE_LEAVES());
 	}
 
 	public function canPlaceOn(Block $soil) : bool{
-		$id = $soil->getId();
-		return $id === BlockLegacyIds::GRASS || $id === BlockLegacyIds::DIRT;
+		$id = $soil->getTypeId();
+		return $id === BlockTypeIds::GRASS || $id === BlockTypeIds::DIRT;
 	}
 
 	public function generate(ChunkManager $world, Random $random, int $sourceX, int $sourceY, int $sourceZ) : bool{
-		while((($blockId = $world->getBlockAt($sourceX, $sourceY, $sourceZ)->getId()) === BlockLegacyIds::AIR || $blockId === BlockLegacyIds::LEAVES) && $sourceY > 0){
+		while((($blockId = $world->getBlockAt($sourceX, $sourceY, $sourceZ)->getTypeId()) === BlockTypeIds::AIR || $blockId === BlockTypeIds::JUNGLE_LEAVES) && $sourceY > 0){
 			--$sourceY;
 		}
 

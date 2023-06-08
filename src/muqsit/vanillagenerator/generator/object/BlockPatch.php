@@ -47,7 +47,7 @@ class BlockPatch extends TerrainObject{
 				}
 				for($y = $sourceY - $this->vertRadius; $y <= $sourceY + $this->vertRadius; ++$y){
 					$block = $world->getBlockAt($x, $y, $z);
-					if(!array_key_exists($block->getFullId(), $this->overridables)){
+					if(!array_key_exists($block->getStateId(), $this->overridables)){
 						continue;
 					}
 

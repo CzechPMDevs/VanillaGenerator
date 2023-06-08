@@ -29,6 +29,7 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use function abs;
 use function array_key_exists;
 use function max;
@@ -150,9 +151,13 @@ class OverworldGenerator extends VanillaGenerator{
 		/** @var Chunk $chunk */
 		$chunk = $world->getChunk($chunkX, $chunkZ);
 
+		$id = null;
 		for($x = 0; $x < $sizeX; ++$x){
 			for($z = 0; $z < $sizeZ; ++$z){
-				$chunk->setBiomeId($x, $z, $id = $grid->getBiome($x, $z));
+				for($y = 0; $y < World::Y_MAX; ++$y) {
+					$chunk->setBiomeId($x, $y, $z, $id = $grid->getBiome($x, $z));
+				}
+
 				if($id !== null && array_key_exists($id, self::$GROUND_MAP)){
 					self::$GROUND_MAP[$id]->generateTerrainColumn($world, $this->random, $cx + $x, $cz + $z, $id, $surfaceNoise[$x | $z << 4]);
 				}else{
@@ -204,9 +209,9 @@ class OverworldGenerator extends VanillaGenerator{
 		$seaFill = self::DENSITY_FILL_SEA_MODE;
 		$densityOffset = self::DENSITY_FILL_OFFSET;
 
-		$stillWater = VanillaBlocks::WATER()->getStillForm()->getFullId();
-		$water = VanillaBlocks::WATER()->getFlowingForm()->getFullId();
-		$stone = VanillaBlocks::STONE()->getFullId();
+		$stillWater = VanillaBlocks::WATER()->getStillForm()->getStateId();
+		$water = VanillaBlocks::WATER()->getFlowingForm()->getStateId();
+		$stone = VanillaBlocks::STONE()->getStateId();
 
 		/** @var Chunk $chunk */
 		$chunk = $world->getChunk($chunkX, $chunkZ);
@@ -246,22 +251,22 @@ class OverworldGenerator extends VanillaGenerator{
 								// the target is density_offset + 0, since the default target is
 								// 0, so don't get too confused by the naming :)
 								if($afill === 1 || $afill === 10 || $afill === 13 || $afill === 16){
-									$subChunk->setFullBlock($m + ($i << 2), $yBlockPos, $n + ($j << 2), $water);
+									$subChunk->setBlockStateId($m + ($i << 2), $yBlockPos, $n + ($j << 2), $water);
 								}elseif($afill === 2 || $afill === 9 || $afill === 12 || $afill === 15){
-									$subChunk->setFullBlock($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stone);
+									$subChunk->setBlockStateId($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stone);
 								}
 
-								if(($dens > $densityOffset && $fill > -1) || ($dens <= $densityOffset && $fill < 0)){
+								if(($dens > $densityOffset && $fill > -1)){
 									if($afill === 0 || $afill === 3 || $afill === 6 || $afill === 9 || $afill === 12){
-										$subChunk->setFullBlock($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stone);
+										$subChunk->setBlockStateId($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stone);
 									}elseif($afill === 2 || $afill === 7 || $afill === 10 || $afill === 16){
-										$subChunk->setFullBlock($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stillWater);
+										$subChunk->setBlockStateId($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stillWater);
 									}
-								}elseif(($yPos < $seaLevel - 1 && $seaFill === 0) || ($yPos >= $seaLevel - 1 && $seaFill === 1)){
+								}elseif(($yPos < $seaLevel - 1 && $seaFill === 0)){
 									if($afill === 0 || $afill === 3 || $afill === 7 || $afill === 10 || $afill === 13){
-										$subChunk->setFullBlock($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stillWater);
+										$subChunk->setBlockStateId($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stillWater);
 									}elseif($afill === 1 || $afill === 6 || $afill === 9 || $afill === 15){
-										$subChunk->setFullBlock($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stone);
+										$subChunk->setBlockStateId($m + ($i << 2), $yBlockPos, $n + ($j << 2), $stone);
 									}
 								}
 
@@ -303,7 +308,7 @@ class OverworldGenerator extends VanillaGenerator{
 		// We need 1 chunk (4 columns) + 1 column for later needed outer edges (1 column) and at
 		// least 2 columns
 		// on each side to be able to cover every value.
-		// 4 + 1 + 2 + 2 = 9 columns but the biomegrid generator needs a multiple of 2 so we ask
+		// 4 + 1 + 2 + 2 = 9 columns but the biomegrid generator needs a multiple of 2, so we ask
 		// 10 columns wide
 		// to the biomegrid generator.
 		// This gives a total of 81 biome grid columns to work with, and this includes the chunk
@@ -321,7 +326,7 @@ class OverworldGenerator extends VanillaGenerator{
 
 		// Sampling densities.
 		// Ideally we would sample 512 (4x4x32) values but in reality we need 825 values (5x5x33).
-		// This is because linear interpolation is done later to re-scale so we need right and
+		// This is because linear interpolation is done later to re-scale, so we need right and
 		// bottom edge values if we want it to be "seamless".
 		// You can check this picture to have a visualization of how the biomegrid is traversed
 		// (2D plan):
@@ -381,7 +386,7 @@ class OverworldGenerator extends VanillaGenerator{
 
 				$noiseH = ($noiseH * 0.2 + $avgHeightBase) * self::BASE_SIZE / 8.0 * 4.0 + self::BASE_SIZE;
 				for($k = 0; $k < 33; ++$k){
-					// density should be lower and lower as we climb up, this gets a height value to
+					// density should be lowed and lower as we climb up, this gets a height value to
 					// subtract from the noise.
 					$nh = ($k - $noiseH) * self::STRETCH_Y * 128.0 / 256.0 / $avgHeightScale;
 					if($nh < 0.0){

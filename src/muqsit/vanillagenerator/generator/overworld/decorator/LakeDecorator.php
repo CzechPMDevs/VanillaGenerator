@@ -7,7 +7,7 @@ namespace muqsit\vanillagenerator\generator\overworld\decorator;
 use muqsit\vanillagenerator\generator\Decorator;
 use muqsit\vanillagenerator\generator\object\Lake;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\utils\Random;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
@@ -34,10 +34,10 @@ class LakeDecorator extends Decorator{
 			$sourceX = ($chunkX << 4) + $random->nextBoundedInt(16);
 			$sourceZ = ($chunkZ << 4) + $random->nextBoundedInt(16);
 			$sourceY = $random->nextBoundedInt($world->getMaxY() - $this->baseOffset) + $this->baseOffset;
-			if($this->type->getId() === BlockLegacyIds::STILL_LAVA && ($sourceY >= 64 || $random->nextBoundedInt(10) > 0)){
+			if($this->type->getTypeId() === BlockTypeIds::LAVA && ($sourceY >= 64 || $random->nextBoundedInt(10) > 0)){
 				return;
 			}
-			while($world->getBlockAt($sourceX, $sourceY, $sourceZ)->getId() === BlockLegacyIds::AIR && $sourceY > 5){
+			while($world->getBlockAt($sourceX, $sourceY, $sourceZ)->getTypeId() === BlockTypeIds::AIR && $sourceY > 5){
 				--$sourceY;
 			}
 			if($sourceY >= 5){

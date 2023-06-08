@@ -6,7 +6,7 @@ namespace muqsit\vanillagenerator\generator\object\tree;
 
 use muqsit\vanillagenerator\generator\utils\MathHelper;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockTypeIds;
 use pocketmine\block\utils\TreeType;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
@@ -19,24 +19,22 @@ class DarkOakTree extends GenericTree{
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
 		$this->setOverridables(
-			BlockLegacyIds::AIR,
-			BlockLegacyIds::LEAVES,
-			BlockLegacyIds::LEAVES2,
-			BlockLegacyIds::GRASS,
-			BlockLegacyIds::DIRT,
-			BlockLegacyIds::LOG,
-			BlockLegacyIds::LOG2,
-			BlockLegacyIds::SAPLING,
-			BlockLegacyIds::VINE
+			BlockTypeIds::AIR,
+			BlockTypeIds::DARK_OAK_LEAVES,
+			BlockTypeIds::GRASS,
+			BlockTypeIds::DIRT,
+			BlockTypeIds::DARK_OAK_LOG,
+			BlockTypeIds::DARK_OAK_SAPLING,
+			BlockTypeIds::VINES
 		);
 
 		$this->setHeight($random->nextBoundedInt(2) + $random->nextBoundedInt(3) + 6);
-		$this->setType(TreeType::DARK_OAK());
+		$this->setType(VanillaBlocks::DARK_OAK_LOG(), VanillaBlocks::DARK_OAK_LEAVES());
 	}
 
 	public function canPlaceOn(Block $soil) : bool{
-		$id = $soil->getId();
-		return $id === BlockLegacyIds::GRASS || $id === BlockLegacyIds::DIRT;
+		$id = $soil->getTypeId();
+		return $id === BlockTypeIds::GRASS || $id === BlockTypeIds::DIRT;
 	}
 
 	public function generate(ChunkManager $world, Random $random, int $sourceX, int $sourceY, int $sourceZ) : bool{
@@ -70,8 +68,8 @@ class DarkOakTree extends GenericTree{
 				--$twistCount;
 			}
 
-			$material = $world->getBlockAt($centerX, $sourceY + $y, $centerZ)->getId();
-			if($material !== BlockLegacyIds::AIR && $material !== BlockLegacyIds::LEAVES){
+			$material = $world->getBlockAt($centerX, $sourceY + $y, $centerZ)->getTypeId();
+			if($material !== BlockTypeIds::AIR && $material !== BlockTypeIds::DARK_OAK_LEAVES){
 				continue;
 			}
 			$trunkTopY = $sourceY + $y;
@@ -114,8 +112,8 @@ class DarkOakTree extends GenericTree{
 					continue;
 				}
 				for($y = 0; $y < $random->nextBoundedInt(3) + 2; ++$y){
-					$material = $world->getBlockAt($sourceX + $x, $trunkTopY - $y - 1, $sourceZ + $z)->getId();
-					if($material === BlockLegacyIds::AIR || $material === BlockLegacyIds::LEAVES){
+					$material = $world->getBlockAt($sourceX + $x, $trunkTopY - $y - 1, $sourceZ + $z)->getTypeId();
+					if($material === BlockTypeIds::AIR || $material === BlockTypeIds::DARK_OAK_LEAVES){
 						$this->transaction->addBlockAt($sourceX + $x, $trunkTopY - $y - 1, $sourceZ + $z, $this->logType);
 					}
 				}
@@ -136,7 +134,7 @@ class DarkOakTree extends GenericTree{
 			}
 		}
 
-		// 50% chance to have a 4 leaves cap on the center of the canopy
+		// 50% chance to have a 4 leaves cap in the center of the canopy
 		if($random->nextBoundedInt(2) === 0){
 			$this->setLeaves($centerX, $trunkTopY + 2, $centerZ, $world);
 			$this->setLeaves($centerX + 1, $trunkTopY + 2, $centerZ, $world);
@@ -154,7 +152,7 @@ class DarkOakTree extends GenericTree{
 	}
 
 	private function setLeaves(int $x, int $y, int $z, ChunkManager $world) : void{
-		if($world->getBlockAt($x, $y, $z)->getId() === BlockLegacyIds::AIR){
+		if($world->getBlockAt($x, $y, $z)->getTypeId() === BlockTypeIds::AIR){
 			$this->transaction->addBlockAt($x, $y, $z, $this->leavesType);
 		}
 	}
