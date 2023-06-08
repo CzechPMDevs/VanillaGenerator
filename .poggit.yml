@@ -4,6 +4,7 @@ branches:
 - master
 projects:
   VanillaGenerator:
+    path: ""
     model: virion
     type: library
 ...
