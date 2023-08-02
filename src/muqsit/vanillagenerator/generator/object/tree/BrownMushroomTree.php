@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace muqsit\vanillagenerator\generator\object\tree;
 
+use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockTypeIds;
+use pocketmine\block\Leaves;
 use pocketmine\block\RedMushroomBlock;
 use pocketmine\block\RuntimeBlockStateRegistry;
 use pocketmine\block\utils\MushroomBlockType;
@@ -25,12 +27,6 @@ class BrownMushroomTree extends GenericTree{
 	 */
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
-		$this->setOverridables(
-			BlockTypeIds::AIR,
-			BlockTypeIds::DARK_OAK_LEAVES,
-			BlockTypeIds::OAK_LEAVES,
-			BlockTypeIds::BIRCH_LEAVES
-		);
 		$this->setHeight($random->nextBoundedInt(3) + 4);
 	}
 
@@ -64,7 +60,7 @@ class BrownMushroomTree extends GenericTree{
 					// skip source block check
 					if($y !== $baseY || $x !== $baseX || $z !== $baseZ){
 						// we can overlap leaves around
-						if(!array_key_exists($world->getBlockAt($x, $y, $z)->getTypeId(), $this->overridables)){
+						if(!$this->canBeOverridden($world->getBlockAt($x, $y, $z))){
 							return false;
 						}
 					}
@@ -165,5 +161,9 @@ class BrownMushroomTree extends GenericTree{
 		}
 
 		return true;
+	}
+
+	protected function canBeOverridden(Block $block): bool {
+		return $block instanceof Air || $block instanceof Leaves;
 	}
 }

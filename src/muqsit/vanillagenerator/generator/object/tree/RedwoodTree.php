@@ -21,10 +21,6 @@ class RedwoodTree extends GenericTree{
 
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
-		$this->setOverridables(
-			BlockTypeIds::AIR,
-			BlockTypeIds::SPRUCE_LEAVES
-		);
 		$this->setHeight($random->nextBoundedInt(4) + 6);
 		$this->setLeavesHeight($random->nextBoundedInt(2) + 1);
 		$this->setMaxRadius($random->nextBoundedInt(2) + 2);
@@ -51,8 +47,7 @@ class RedwoodTree extends GenericTree{
 				for($z = $baseZ - $radius; $z <= $baseZ + $radius; ++$z){
 					if($y >= 0 && $y < World::Y_MAX){
 						// we can overlap some blocks around
-						$type = $world->getBlockAt($x, $y, $z)->getTypeId();
-						if(!array_key_exists($type, $this->overridables)){
+						if(!$this->canBeOverridden($world->getBlockAt($x, $y, $z))){
 							return false;
 						}
 					}else{ // $this->height out of range
@@ -103,8 +98,7 @@ class RedwoodTree extends GenericTree{
 
 		// generate the trunk
 		for($y = 0; $y < $this->height - $random->nextBoundedInt(3); $y++){
-			$type = $world->getBlockAt($sourceX, $sourceY + $y, $sourceZ)->getTypeId();
-			if(array_key_exists($type, $this->overridables)){
+			if($this->canBeOverridden($world->getBlockAt($sourceX, $sourceY + $y, $sourceZ))){
 				$this->transaction->addBlockAt($sourceX, $sourceY + $y, $sourceZ, $this->logType);
 			}
 		}

@@ -7,7 +7,6 @@ namespace muqsit\vanillagenerator\generator\object\tree;
 use muqsit\vanillagenerator\generator\utils\MathHelper;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
-use pocketmine\block\utils\TreeType;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
 use pocketmine\world\BlockTransaction;
@@ -18,15 +17,6 @@ class DarkOakTree extends GenericTree{
 
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
-		$this->setOverridables(
-			BlockTypeIds::AIR,
-			BlockTypeIds::DARK_OAK_LEAVES,
-			BlockTypeIds::GRASS,
-			BlockTypeIds::DIRT,
-			BlockTypeIds::DARK_OAK_LOG,
-			BlockTypeIds::DARK_OAK_SAPLING,
-			BlockTypeIds::VINES
-		);
 
 		$this->setHeight($random->nextBoundedInt(2) + $random->nextBoundedInt(3) + 6);
 		$this->setType(VanillaBlocks::DARK_OAK_LOG(), VanillaBlocks::DARK_OAK_LEAVES());

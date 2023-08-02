@@ -44,7 +44,7 @@ class MegaJungleTree extends GenericTree{
 				for($z = $baseZ - $radius; $z <= $baseZ + $radius; ++$z){
 					if($y >= 0 && $y < World::Y_MAX){
 						// we can overlap some blocks around
-						if(!array_key_exists($world->getBlockAt($x, $y, $z)->getTypeId(), $this->overridables)){
+						if(!$this->canBeOverridden($world->getBlockAt($x, $y, $z))){
 							return false;
 						}
 					}else{ // height out of range

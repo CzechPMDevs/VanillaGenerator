@@ -9,6 +9,7 @@ use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
 use pocketmine\block\Leaves;
+use pocketmine\block\Sapling;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wood;
 use pocketmine\utils\Random;
@@ -26,9 +27,6 @@ class GenericTree extends TerrainObject{
 	protected Block $logType;
 	protected Block $leavesType;
 
-	/** @var int[] */
-	protected array $overridables;
-
 	/**
 	 * Initializes this tree with a random height, preparing it to attempt to generate.
 	 *
@@ -37,36 +35,9 @@ class GenericTree extends TerrainObject{
 	 */
 	public function __construct(Random $random, BlockTransaction $transaction){
 		$this->transaction = $transaction;
-		$this->setOverridables(
-			BlockTypeIds::AIR,
-			BlockTypeIds::ACACIA_LEAVES,
-			BlockTypeIds::AZALEA_LEAVES,
-			BlockTypeIds::BIRCH_LEAVES,
-			BlockTypeIds::DARK_OAK_LEAVES,
-			BlockTypeIds::JUNGLE_LEAVES,
-			BlockTypeIds::FLOWERING_AZALEA_LEAVES,
-			BlockTypeIds::MANGROVE_LEAVES,
-			BlockTypeIds::OAK_LEAVES,
-			BlockTypeIds::SPRUCE_LEAVES,
-			BlockTypeIds::GRASS,
-			BlockTypeIds::DIRT,
-			BlockTypeIds::ACACIA_LOG,
-			BlockTypeIds::BIRCH_LOG,
-			BlockTypeIds::DARK_OAK_LOG,
-			BlockTypeIds::JUNGLE_LOG,
-			BlockTypeIds::MANGROVE_LOG,
-			BlockTypeIds::OAK_LOG,
-			BlockTypeIds::SPRUCE_LOG,
-			BlockTypeIds::VINES
-			// TODO - Sapling
-		);
 
 		$this->setHeight($random->nextBoundedInt(3) + 4);
 		$this->setType(VanillaBlocks::OAK_LOG(), VanillaBlocks::OAK_LEAVES());
-	}
-
-	final protected function setOverridables(int ...$overridables) : void{
-		$this->overridables = array_flip($overridables);
 	}
 
 	final protected function setHeight(int $height) : void{
@@ -125,7 +96,7 @@ class GenericTree extends TerrainObject{
 				for($z = $baseZ - $radius; $z <= $baseZ + $radius; ++$z){
 					if($y >= 0 && $y < $height){
 						// we can overlap some blocks around
-						if(!array_key_exists($world->getBlockAt($x, $y, $z)->getTypeId(), $this->overridables)){
+						if(!$this->canBeOverridden($world->getBlockAt($x, $y, $z))){
 							return false;
 						}
 					}else{ // height out of range
@@ -205,5 +176,17 @@ class GenericTree extends TerrainObject{
 		if($oldMaterial instanceof Air || $oldMaterial instanceof Leaves){
 			$this->transaction->addBlockAt($x, $y, $z, $newMaterial);
 		}
+	}
+
+	protected function canBeOverridden(Block $block): bool {
+		return (
+			$block instanceof Air ||
+			$block instanceof Leaves ||
+			$block instanceof Wood ||
+			$block instanceof Sapling ||
+			$block->isSameState(VanillaBlocks::DIRT()) ||
+			$block->isSameState(VanillaBlocks::GRASS()) ||
+			$block->isSameState(VanillaBlocks::VINES())
+		);
 	}
 }

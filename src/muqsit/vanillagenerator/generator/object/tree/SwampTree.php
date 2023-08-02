@@ -23,7 +23,6 @@ class SwampTree extends CocoaTree{
 
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
-		$this->setOverridables(BlockTypeIds::AIR, BlockTypeIds::OAK_LEAVES);
 		$this->setHeight($random->nextBoundedInt(4) + 5);
 		$this->setType(VanillaBlocks::OAK_LOG(), VanillaBlocks::OAK_LEAVES());
 	}
@@ -51,8 +50,7 @@ class SwampTree extends CocoaTree{
 				for($z = $baseZ - $radius; $z <= $baseZ + $radius; ++$z){
 					// we can overlap some blocks around
 					$type = $world->getBlockAt($x, $y, $z);
-					$typeId = $type->getTypeId();
-					if(array_key_exists($typeId, $this->overridables)){
+					if($this->canBeOverridden($type)){
 						continue;
 					}
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace muqsit\vanillagenerator\generator\object\tree;
 
+use pocketmine\block\Air;
+use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\utils\Random;
@@ -15,15 +17,7 @@ class TallRedwoodTree extends RedwoodTree{
 
 	public function __construct(Random $random, BlockTransaction $transaction){
 		parent::__construct($random, $transaction);
-		$this->setOverridables(
-			BlockTypeIds::AIR,
-			BlockTypeIds::SPRUCE_LEAVES,
-			BlockTypeIds::GRASS,
-			BlockTypeIds::DIRT,
-			BlockTypeIds::SPRUCE_LOG,
-			BlockTypeIds::SPRUCE_SAPLING,
-			BlockTypeIds::VINES
-		);
+
 		$this->setHeight($random->nextBoundedInt(5) + 7);
 		$this->setLeavesHeight($this->height - $random->nextBoundedInt(2) - 3);
 		$this->setMaxRadius($random->nextBoundedInt($this->height - $this->leavesHeight + 1) + 1);

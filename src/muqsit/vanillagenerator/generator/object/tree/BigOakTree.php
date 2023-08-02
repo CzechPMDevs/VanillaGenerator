@@ -72,7 +72,7 @@ class BigOakTree extends GenericTree{
 						$zSquared = pow(abs($z) + 0.5, 2);
 						if(
 							($xSquared + $zSquared <= $sizeSquared) &&
-							array_key_exists($world->getBlockAt($node->x + $x, $node->y + $y, $node->z + $z)->getTypeId(), $this->overridables)
+							$this->canBeOverridden($world->getBlockAt($node->x + $x, $node->y + $y, $node->z + $z))
 						){
 							$this->transaction->addBlockAt($node->x + $x, $node->y + $y, $node->z + $z, $this->leavesType);
 						}
@@ -130,7 +130,7 @@ class BigOakTree extends GenericTree{
 				if(
 					$targetFloorY < $minY ||
 					$targetFloorY > $maxY ||
-					!array_key_exists($world->getBlockAt($target->getFloorX(), $target->getFloorY(), $target->getFloorZ())->getTypeId(), $this->overridables)
+					!$this->canBeOverridden($world->getBlockAt($target->getFloorX(), $target->getFloorY(), $target->getFloorZ()))
 				){
 					return $n;
 				}
